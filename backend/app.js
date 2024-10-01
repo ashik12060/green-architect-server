@@ -34,7 +34,7 @@ const authRoutes = require('./routes/authRoutes');
 const postRoute = require('./routes/postRoute');
 const rndRoute = require('./routes/rndRoute');
 const itemRoute = require('./routes/itemRoute');
-const galleryRoute = require('./routes/galleryRoute');
+const memberRoute = require('./routes/memberRoute');
 
 
 
@@ -94,7 +94,7 @@ app.use('/api', authRoutes);
 app.use('/api', postRoute);
 app.use('/api', rndRoute);
 app.use('/api',itemRoute);
-app.use('/api',galleryRoute);
+app.use('/api',memberRoute);
 
 
 app.get('/', (req, res) => {

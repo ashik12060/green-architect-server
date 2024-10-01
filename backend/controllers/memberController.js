@@ -1,11 +1,11 @@
 const cloudinary = require('../utils/cloudinary');
 const ErrorResponse = require('../utils/errorResponse');
 const main = require('../app');
-const Gallery = require('../models/galleryModel');
+const Member = require('../models/memberModel');
 
 //create item
-exports.createGallery = async (req, res, next) => {
-    const { title, content, postedBy, image, likes, comments } = req.body;
+exports.createMember = async (req, res, next) => {
+    const { title, designation, postedBy, image, likes, comments } = req.body;
 
     try {
         //upload image in cloudinary
@@ -14,9 +14,9 @@ exports.createGallery = async (req, res, next) => {
             width: 1200,
             crop: "scale"
         })
-        const gallery = await Gallery.create({
+        const member = await Member.create({
             title,
-            content,
+            designation,
 
             postedBy: req.user._id,
             image: {
@@ -27,7 +27,7 @@ exports.createGallery = async (req, res, next) => {
         });
         res.status(201).json({
             success: true,
-            gallery
+            member
         })
 
 
@@ -39,13 +39,13 @@ exports.createGallery = async (req, res, next) => {
 }
 
 
-//show galleries
-exports.showGallery = async (req, res, next) => {
+//show Members
+exports.showMember = async (req, res, next) => {
     try {
-        const galleries = await Gallery.find().sort({ createdAt: -1 }).populate('postedBy', 'name');
+        const members = await Member.find().sort({ createdAt: -1 }).populate('postedBy', 'name');
         res.status(201).json({
             success: true,
-            galleries
+            members
         })
     } catch (error) {
         next(error);
@@ -54,13 +54,13 @@ exports.showGallery = async (req, res, next) => {
 }
 
 
-//show single gallery
-exports.showSingleGallery = async (req, res, next) => {
+//show single member
+exports.showSingleMember = async (req, res, next) => {
     try {
-        const gallery = await Gallery.findById(req.params.id).populate('comments.postedBy', 'name');
+        const members = await Members.findById(req.params.id).populate('comments.postedBy', 'name');
         res.status(200).json({
             success: true,
-            gallery
+            members
         })
     } catch (error) {
         next(error);
@@ -70,17 +70,17 @@ exports.showSingleGallery = async (req, res, next) => {
 
 
 //delete item
-exports.deleteGallery = async (req, res, next) => {
-    const currentGallery = await Gallery.findById(req.params.id);
+exports.deleteMember = async (req, res, next) => {
+    const currentMember = await Member.findById(req.params.id);
 
-    //delete gallery image in cloudinary       
-    const ImgId = currentGallery.image.public_id;
+    //delete member image in cloudinary       
+    const ImgId = currentMember.image.public_id;
     if (ImgId) {
         await cloudinary.uploader.destroy(ImgId);
     }
 
     try {
-        const gallery = await Gallery.findByIdAndRemove(req.params.id);
+        const member = await Member.findByIdAndRemove(req.params.id);
         res.status(200).json({
             success: true,
             message: "Image deleted"
@@ -93,29 +93,29 @@ exports.deleteGallery = async (req, res, next) => {
 }
 
 
-//update gallery
-exports.updateGallery = async (req, res, next) => {
+//update member
+exports.updateMember = async (req, res, next) => {
     try {
-        const { title, content, image } = req.body;
-        const currentGallery = await Gallery.findById(req.params.id);
+        const { title, designation, image } = req.body;
+        const currentMember = await Member.findById(req.params.id);
 
         //build the object data
         const data = {
-            title: title || currentGallery.title,
-            content: content || currentGallery.content,
-            image: image || currentGallery.image,
+            title: title || currentMember.title,
+            designation: designation || currentMember.designation,
+            image: image || currentMember.image,
         }
 
-        //modify gallery image conditionally
+        //modify member image conditionally
         if (req.body.image !== '') {
 
-            const ImgId = currentGallery.image.public_id;
+            const ImgId = currentMember.image.public_id;
             if (ImgId) {
                 await cloudinary.uploader.destroy(ImgId);
             }
 
             const newImage = await cloudinary.uploader.upload(req.body.image, {
-                folder: 'Gallery',
+                folder: 'Member',
                 width: 1200,
                 crop: "scale"
             });
@@ -127,11 +127,11 @@ exports.updateGallery = async (req, res, next) => {
 
         }
 
-        const galleryUpdate = await Gallery.findByIdAndUpdate(req.params.id, data, { new: true });
+        const memberUpdate = await Member.findByIdAndUpdate(req.params.id, data, { new: true });
 
         res.status(200).json({
             success: true,
-            galleryUpdate
+            memberUpdate
         })
 
     } catch (error) {

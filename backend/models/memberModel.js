@@ -1,15 +1,15 @@
 const mongoose = require('mongoose');
 const { ObjectId } = mongoose.Schema;
 
-const gallerySchema = new mongoose.Schema(
+const memberSchema = new mongoose.Schema(
     {
         title: {
             type: String,
             required: [true, "title is required"],
         },
-        content: {
+        designation: {
             type: String,
-            required: [true, "content is required"],
+            required: [true, "designation is required"],
         },
         postedBy: {
             type: ObjectId,
@@ -34,4 +34,4 @@ const gallerySchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-module.exports = mongoose.model('Gallery', gallerySchema);
+module.exports = mongoose.model('Member', memberSchema);
