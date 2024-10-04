@@ -33,7 +33,7 @@ app.set('trust proxy', 1);
 const authRoutes = require('./routes/authRoutes');
 const postRoute = require('./routes/postRoute');
 const rndRoute = require('./routes/rndRoute');
-const itemRoute = require('./routes/itemRoute');
+const carouselRoute = require('./routes/carouselRoute');
 const memberRoute = require('./routes/memberRoute');
 
 
@@ -93,7 +93,7 @@ app.use(hpp());
 app.use('/api', authRoutes);
 app.use('/api', postRoute);
 app.use('/api', rndRoute);
-app.use('/api',itemRoute);
+app.use('/api',carouselRoute);
 app.use('/api',memberRoute);
 
 
