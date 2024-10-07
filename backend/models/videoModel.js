@@ -1,15 +1,19 @@
 const mongoose = require('mongoose');
 const { ObjectId } = mongoose.Schema;
 
-const memberSchema = new mongoose.Schema(
+const videoSchema = new mongoose.Schema(
     {
         title: {
             type: String,
             required: [true, "title is required"],
         },
-        designation: {
+        thumbnail: {
             type: String,
-            required: [true, "designation is required"],
+            required: [true, "thumbnail is required"],
+        },
+        videoUrl: {
+            type: String,
+            required: [true, "videoUrl is required"],
         },
         postedBy: {
             type: ObjectId,
@@ -24,4 +28,4 @@ const memberSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-module.exports = mongoose.model('Member', memberSchema);
+module.exports = mongoose.model('Video', videoSchema);
