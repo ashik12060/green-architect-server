@@ -15,8 +15,12 @@ exports.createCarousel = async (req, res, next) => {
             crop: "scale"
         })
         const carousel = await Carousel.create({
-            title,
-            postedBy: req.user._id,
+            title: {
+                en: title.en,  // English title
+                bn: title.bn,  // Bengali title
+                es: title.es,  // Spanish title
+              },
+              postedBy: req.user._id,
             image: {
                 public_id: result.public_id,
                 url: result.secure_url

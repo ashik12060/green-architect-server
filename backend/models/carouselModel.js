@@ -4,9 +4,10 @@ const { ObjectId } = mongoose.Schema;
 const carouselSchema = new mongoose.Schema(
     {
         title: {
-            type: String,
-            required: [true, "title is required"],
-        },
+            en: { type: String, required: true },
+            bn: { type: String, required: true },
+            es: { type: String, required: true },
+          },
         postedBy: {
             type: ObjectId,
             ref: "User",
