@@ -4,13 +4,16 @@ const { ObjectId } = mongoose.Schema;
 const postSchema = new mongoose.Schema(
     {
         title: {
-            type: String,
-            required: [true, "title is required"],
-        },
-        content: {
-            type: String,
-            required: [true, "content is required"],
-        },
+            en: { type: String, required: true },
+            bn: { type: String, required: true },
+            es: { type: String, required: true },
+          },
+          content: {
+            en: { type: String, required: true },
+            bn: { type: String, required: true },
+            es: { type: String, required: true },
+          },
+        
         postedBy: {
             type: ObjectId,
             ref: "User",

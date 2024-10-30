@@ -15,8 +15,17 @@ exports.createPost = async (req, res, next) => {
             crop: "scale"
         })
         const post = await Post.create({
-            title,
-            content,
+            title: {
+                en: title.en,  // English title
+                bn: title.bn,  // Bengali title
+                es: title.es,  // Spanish title
+              },
+              content: {
+                en: content.en,  // English title
+                bn: content.bn,  // Bengali title
+                es: content.es,  // Spanish title
+              },
+            
 
             postedBy: req.user._id,
             image: {
@@ -37,6 +46,40 @@ exports.createPost = async (req, res, next) => {
     }
 
 }
+// //create post
+// exports.createPost = async (req, res, next) => {
+//     const { title, content, postedBy, image, likes, comments } = req.body;
+
+//     try {
+//         //upload image in cloudinary
+//         const result = await cloudinary.uploader.upload(image, {
+//             folder: "posts",
+//             width: 1200,
+//             crop: "scale"
+//         })
+//         const post = await Post.create({
+//             title,
+//             content,
+
+//             postedBy: req.user._id,
+//             image: {
+//                 public_id: result.public_id,
+//                 url: result.secure_url
+//             },
+
+//         });
+//         res.status(201).json({
+//             success: true,
+//             post
+//         })
+
+
+//     } catch (error) {
+//         console.log(error);
+//         next(error);
+//     }
+
+// }
 
 
 //show posts
