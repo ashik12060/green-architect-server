@@ -24,8 +24,17 @@ exports.createRnd = async (req, res, next) => {
     });
 
     const rnd = await Rnd.create({
-      title,
-      content,
+      title: {
+        en: title.en,  // English title
+        bn: title.bn,  // Bengali title
+        es: title.es,  // Spanish title
+      },
+      content: {
+        en: content.en,  // English title
+        bn: content.bn,  // Bengali title
+        es: content.es,  // Spanish title
+      },
+    
       postedBy: req.user._id,
       image: {
         public_id: result.public_id,

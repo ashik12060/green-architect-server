@@ -15,8 +15,17 @@ exports.createProject = async (req, res, next) => {
             crop: "scale"
         })
         const project = await Project.create({
-            title,
-            content,
+            title: {
+                en: title.en,  // English title
+                bn: title.bn,  // Bengali title
+                es: title.es,  // Spanish title
+              },
+              content: {
+                en: content.en,  // English title
+                bn: content.bn,  // Bengali title
+                es: content.es,  // Spanish title
+              },
+            
 
             postedBy: req.user._id,
             image: {

@@ -15,7 +15,11 @@ exports.createVideo = async (req, res, next) => {
             crop: "scale"
         })
         const video = await Video.create({
-            title,
+            title: {
+                en: title.en,  // English title
+                bn: title.bn,  // Bengali title
+                es: title.es,  // Danish title
+              },
             thumbnail,
             videoUrl,
             postedBy: req.user._id,

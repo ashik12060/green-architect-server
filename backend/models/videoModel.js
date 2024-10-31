@@ -4,9 +4,10 @@ const { ObjectId } = mongoose.Schema;
 const videoSchema = new mongoose.Schema(
     {
         title: {
-            type: String,
-            required: [true, "title is required"],
-        },
+            en: { type: String, required: true },
+            bn: { type: String, required: true },
+            es: { type: String, required: true },
+          },
         thumbnail: {
             type: String,
             required: [true, "thumbnail is required"],
