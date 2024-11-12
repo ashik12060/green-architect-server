@@ -40,7 +40,7 @@ const Member = require('../models/memberModel');
 
 // ne
 exports.createMember = async (req, res, next) => {
-    const { title, designation, image } = req.body;
+    const { title, designation,article, image } = req.body;
   
     try {
       // Upload image to Cloudinary
@@ -61,6 +61,11 @@ exports.createMember = async (req, res, next) => {
           en: designation.en,  // English designation
           bn: designation.bn,  // Bengali designation
           es: designation.es,  // Spanish designation
+        },
+        article: {
+          en: article.en,  // English article
+          bn: article.bn,  // Bengali article
+          es: article.es,  // Spanish article
         },
         postedBy: req.user._id,
         image: {

@@ -12,6 +12,11 @@ const memberSchema = new mongoose.Schema({
     bn: { type: String, required: true },
     es: { type: String, required: true },
   },
+  article: {
+    en: { type: String, required: true },
+    bn: { type: String, required: true },
+    es: { type: String, required: true },
+  },
   postedBy: {
     type: ObjectId,
     ref: "User",
