@@ -4,48 +4,92 @@ const ErrorResponse = require('../utils/errorResponse');
 const main = require('../app');
 
 //create post
-exports.createProject = async (req, res, next) => {
-    const { title, content, postedBy, image} = req.body;
+// exports.createProject = async (req, res, next) => {
+//     const { title, content, postedBy, image} = req.body;
 
-    try {
-        //upload image in cloudinary
-        const result = await cloudinary.uploader.upload(image, {
-            folder: "projects",
-            width: 1200,
-            crop: "scale"
-        })
-        const project = await Project.create({
-            title: {
-                en: title.en,  // English title
-                bn: title.bn,  // Bengali title
-                es: title.es,  // Spanish title
-              },
-              content: {
-                en: content.en,  // English title
-                bn: content.bn,  // Bengali title
-                es: content.es,  // Spanish title
-              },
+//     try {
+//         //upload image in cloudinary
+//         const result = await cloudinary.uploader.upload(image, {
+//             folder: "projects",
+//             width: 1200,
+//             crop: "scale"
+//         })
+//         const project = await Project.create({
+//             title: {
+//                 en: title.en,  // English title
+//                 bn: title.bn,  // Bengali title
+//                 es: title.es,  // Spanish title
+//               },
+//               content: {
+//                 en: content.en,  // English title
+//                 bn: content.bn,  // Bengali title
+//                 es: content.es,  // Spanish title
+//               },
             
 
-            postedBy: req.user._id,
-            image: {
-                public_id: result.public_id,
-                url: result.secure_url
-            },
+//             postedBy: req.user._id,
+//             image: {
+//                 public_id: result.public_id,
+//                 url: result.secure_url
+//             },
 
+//         });
+//         res.status(201).json({
+//             success: true,
+//             project 
+//         })
+
+
+//     } catch (error) {
+//         console.log(error);
+//         next(error);
+//     }
+
+// }
+
+
+//multiple image add
+exports.createProject = async (req, res, next) => {
+    const { title, content, postedBy, images } = req.body;
+
+    try {
+        // Upload each image to Cloudinary
+        const uploadedImages = await Promise.all(
+            images.map(async (image) => {
+                const result = await cloudinary.uploader.upload(image, {
+                    folder: "projects",
+                    width: 1200,
+                    crop: "scale"
+                });
+                return { public_id: result.public_id, url: result.secure_url };
+            })
+        );
+
+        const project = await Project.create({
+            title: {
+                en: title.en,
+                bn: title.bn,
+                es: title.es,
+            },
+            content: {
+                en: content.en,
+                bn: content.bn,
+                es: content.es,
+            },
+            postedBy: req.user._id,
+            images: uploadedImages
         });
+
         res.status(201).json({
             success: true,
-            project 
-        })
-
-
+            project
+        });
     } catch (error) {
         console.log(error);
         next(error);
     }
+};
 
-}
 
 
 //show Project 
@@ -103,49 +147,93 @@ exports.deleteProject  = async (req, res, next) => {
 
 
 //update Project 
-exports.updateProject  = async (req, res, next) => {
+// exports.updateProject  = async (req, res, next) => {
+//     try {
+//         const { title, content, image } = req.body;
+//         const currentProject  = await Project .findById(req.params.id);
+
+//         //build the object data
+//         const data = {
+//             title: title || currentProject .title,
+//             content: content || currentProject .content,
+//             image: image || currentProject .image,
+//         }
+
+//         //modify Project  image conditionally
+//         if (req.body.image !== '') {
+
+//             const ImgId = currentProject.image.public_id;
+//             if (ImgId) {
+//                 await cloudinary.uploader.destroy(ImgId);
+//             }
+
+//             const newImage = await cloudinary.uploader.upload(req.body.image, {
+//                 folder: 'projects ',
+//                 width: 1200,
+//                 crop: "scale"
+//             });
+
+//             data.image = {
+//                 public_id: newImage.public_id,
+//                 url: newImage.secure_url
+//             }
+
+//         }
+
+//         const projectsUpdate = await Project.findByIdAndUpdate(req.params.id, data, { new: true });
+
+//         res.status(200).json({
+//             success: true,
+//             projectsUpdate
+//         })
+
+//     } catch (error) {
+//         next(error);
+//     }
+
+// }
+
+
+
+// add multiple images
+exports.updateProject = async (req, res, next) => {
     try {
-        const { title, content, image } = req.body;
-        const currentProject  = await Project .findById(req.params.id);
+        const { title, content, images } = req.body;
+        const currentProject = await Project.findById(req.params.id);
 
-        //build the object data
-        const data = {
-            title: title || currentProject .title,
-            content: content || currentProject .content,
-            image: image || currentProject .image,
+        // Delete old images if a new set of images is provided
+        if (images && images.length) {
+            await Promise.all(
+                currentProject.images.map((img) =>
+                    cloudinary.uploader.destroy(img.public_id)
+                )
+            );
+
+            // Upload new images to Cloudinary
+            const uploadedImages = await Promise.all(
+                images.map(async (image) => {
+                    const result = await cloudinary.uploader.upload(image, {
+                        folder: 'projects',
+                        width: 1200,
+                        crop: "scale"
+                    });
+                    return { public_id: result.public_id, url: result.secure_url };
+                })
+            );
+
+            currentProject.images = uploadedImages;
         }
 
-        //modify Project  image conditionally
-        if (req.body.image !== '') {
-
-            const ImgId = currentProject.image.public_id;
-            if (ImgId) {
-                await cloudinary.uploader.destroy(ImgId);
-            }
-
-            const newImage = await cloudinary.uploader.upload(req.body.image, {
-                folder: 'projects ',
-                width: 1200,
-                crop: "scale"
-            });
-
-            data.image = {
-                public_id: newImage.public_id,
-                url: newImage.secure_url
-            }
-
-        }
-
-        const projectsUpdate = await Project.findByIdAndUpdate(req.params.id, data, { new: true });
+        currentProject.title = title || currentProject.title;
+        currentProject.content = content || currentProject.content;
+        const projectsUpdate = await currentProject.save();
 
         res.status(200).json({
             success: true,
             projectsUpdate
-        })
+        });
 
     } catch (error) {
         next(error);
     }
-
-}
-
+};
