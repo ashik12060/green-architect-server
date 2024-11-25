@@ -92,6 +92,7 @@ const main = require("../app");
 // };
 
 // third
+
 exports.createProject = async (req, res, next) => {
   const {
     title,
@@ -278,3 +279,36 @@ exports.updateProject = async (req, res, next) => {
     next(error);
   }
 };
+
+// project Re-ordering
+exports.reorderProjects = async (req, res, next) => {
+  const { reorderedIds } = req.body; // Array of project IDs in the new order
+
+  if (!reorderedIds || !Array.isArray(reorderedIds)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid input. 'reorderedIds' must be an array of project IDs.",
+    });
+  }
+
+  try {
+    await Promise.all(
+      reorderedIds.map(async (projectId, index) => {
+        await Project.findByIdAndUpdate(projectId, { order: index });
+      })
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Projects reordered successfully.",
+    });
+  } catch (error) {
+    console.error("Error reordering projects:", error);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while reordering projects.",
+    });
+    next(error);
+  }
+};
+

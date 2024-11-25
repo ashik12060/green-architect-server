@@ -147,6 +147,7 @@ const projectSchema = new mongoose.Schema(
             url: String,
             public_id: String,
         }],
+        order: { type: Number, default: 0 },
     },
     { timestamps: true }
 );
