@@ -9,7 +9,7 @@ const router = express.Router();
 router.post('/project/create', isAuthenticated, isAdmin, createProject);
 router.get('/projects/show', showProject);
 router.get('/project/:id', showSingleProject);
-router.put('/projects/reorder',  reorderProjects);
+router.put('/projects/reorder',   isAuthenticated, isAdmin, reorderProjects);
 router.delete('/delete/project/:id', isAuthenticated, deleteProject);
 router.put('/update/project/:id', isAuthenticated, isAdmin, updateProject);
 

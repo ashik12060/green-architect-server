@@ -149,3 +149,109 @@ exports.updateProduct = async (req, res, next) => {
 
 }
 
+
+
+
+// exports.reorderProducts = async (req, res, next) => {
+//     const { reorderedProducts } = req.body;
+
+//     try {
+//         // Update each product's order in the database
+//         for (const [index, product] of reorderedProducts.entries()) {
+//             await Product.findByIdAndUpdate(product._id, { order: index });
+//         }
+
+//         res.status(200).json({
+//             success: true,
+//             message: "Products reordered successfully!",
+//         });
+//     } catch (error) {
+//         console.error(error);
+//         next(error);
+//     }
+// };
+
+// exports.reorderProducts = async (req, res) => {
+//     const { reorderedProducts } = req.body;
+  
+//     try {
+//       // Loop through the reordered products and update their 'order' field in the database
+//       for (let i = 0; i < reorderedProducts.length; i++) {
+//         await Product.findByIdAndUpdate(reorderedProducts[i], {
+//           order: i, // Update the 'order' field with the new index
+//         });
+//       }
+  
+//       res.status(200).json({ message: "Product order updated successfully" });
+//     } catch (err) {
+//       console.error("Failed to reorder products", err);
+//       res.status(500).json({ message: "Failed to reorder products" });
+//     }
+//   };
+  
+// exports.reorderProducts = async (req, res) => {
+//     const { reorderedProducts } = req.body;
+
+//     try {
+//         // Using Promise.all for parallel updates
+//         const updatePromises = reorderedProducts.map((productId, index) => 
+//             Product.findByIdAndUpdate(productId, { order: index })
+//         );
+
+//         // Wait for all the update promises to resolve
+//         await Promise.all(updatePromises);
+
+//         res.status(200).json({ message: "Product order updated successfully" });
+//     } catch (err) {
+//         console.error("Failed to reorder products", err);
+//         res.status(500).json({ message: "Failed to reorder products" });
+//     }
+// };
+
+// exports.reorderProducts = async (req, res) => {
+//     const { reorderedProducts } = req.body;
+
+//     if (!reorderedProducts || reorderedProducts.length === 0) {
+//         return res.status(400).json({ message: "No products to reorder" });
+//     }
+
+//     try {
+//         const updatePromises = reorderedProducts.map((productId, index) => {
+//             console.log(`Updating product with ID ${productId} to order ${index}`);
+//             return Product.findByIdAndUpdate(productId, { order: index });
+//         });
+
+//         const updatedProducts = await Promise.all(updatePromises);
+
+//         console.log("Updated products:", updatedProducts);
+//         res.status(200).json({ message: "Product order updated successfully", products: updatedProducts });
+//     } catch (err) {
+//         console.error("Failed to reorder products", err);
+//         res.status(500).json({ message: "Failed to reorder products", error: err.message });
+//     }
+// };
+
+exports.reorderProducts = async (req, res) => {
+    const { reorderedProducts } = req.body;
+  
+    try {
+      // Using Promise.all for parallel updates
+      const updatePromises = reorderedProducts.map((productId, index) => 
+        Product.findByIdAndUpdate(productId, { order: index })
+      );
+  
+      // Wait for all the update promises to resolve
+      await Promise.all(updatePromises);
+  
+      // Retrieve the updated product list
+      const updatedProducts = await Product.find().sort({ order: 1 });
+  
+      console.log("Updated products after reorder:", updatedProducts); // Debugging log
+  
+      res.status(200).json({ message: "Product order updated successfully", products: updatedProducts });
+    } catch (err) {
+      console.error("Failed to reorder products", err);
+      res.status(500).json({ message: "Failed to reorder products" });
+    }
+  };
+  

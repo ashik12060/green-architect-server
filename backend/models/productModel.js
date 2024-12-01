@@ -23,6 +23,8 @@ const productSchema = new mongoose.Schema(
             url: String,
             public_id: String,
         },
+        order: { type: Number, default: 0, required: true },
+
         
     },
     { timestamps: true }
