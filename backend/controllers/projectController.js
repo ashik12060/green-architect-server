@@ -3,8 +3,6 @@ const Project = require("../models/projectsModel");
 const ErrorResponse = require("../utils/errorResponse");
 const main = require("../app");
 
-
-
 exports.createProject = async (req, res, next) => {
   const {
     title,
@@ -20,11 +18,59 @@ exports.createProject = async (req, res, next) => {
     launchDate,
     collectionName,
     buildingType,
+    mosque,
+    college,
+    school,
+    market,
+    bank1,
+    bank2,
+    atm,
+    busStop,
+    mosqueName,
+    collegeName,
+    schoolName,
+    marketName,
+    bank1Name,
+    bank2Name,
+    atmName,
+    busStopName,
+
     category,
   } = req.body;
 
   // Validate required fields
-  if (!title || !content || !images || !category || !address || !landArea ||!floors ||!apartmentFloor ||!size ||!bedroom ||!bathroom ||!launchDate ||!collectionName || !buildingType) {
+  if (
+    !title ||
+    !content ||
+    !images ||
+    !category ||
+    !address ||
+    !landArea ||
+    !floors ||
+    !apartmentFloor ||
+    !size ||
+    !bedroom ||
+    !bathroom ||
+    !launchDate ||
+    !collectionName ||
+    !buildingType ||
+    !mosque ||
+    !college ||
+    !school ||
+    !market ||
+    !bank1 ||
+    !bank2 ||
+    !atm ||
+    !busStop ||
+    !mosqueName ||
+    !collegeName ||
+    !schoolName ||
+    !marketName ||
+    !bank1Name ||
+    !bank2Name ||
+    !atmName ||
+    !busStopName
+  ) {
     return res.status(400).json({
       success: false,
       message: "All fields  are required.",
@@ -34,11 +80,11 @@ exports.createProject = async (req, res, next) => {
   try {
     // Normalize category (in case the frontend sends mixed case)
     const validCategories = [
-      "web-development",
-      "design",
-      "marketing",
-      "data-science",
-      "other",
+      "commercial",
+      "healthcare",
+      "residential",
+      "religious",
+      "landscape",
     ];
     const normalizedCategory = category.toLowerCase();
 
@@ -76,6 +122,25 @@ exports.createProject = async (req, res, next) => {
       launchDate,
       collectionName,
       buildingType,
+      mosque,
+      college,
+      school,
+      market,
+      bank1,
+      bank2,
+      atm,
+      busStop,
+      mosqueName,
+      collegeName,
+      schoolName,
+      marketName,
+      bank1Name,
+      bank2Name,
+      atmName,
+      busStopName,
+
+
+      
       category: normalizedCategory, // Use normalized category
       postedBy: req.user._id, // Assuming user info is in req.user
       images: uploadedImages,
@@ -191,9 +256,6 @@ exports.updateProject = async (req, res, next) => {
     next(error);
   }
 };
-
-
-
 
 exports.reorderProjects = async (req, res) => {
   const { reorderedProjects } = req.body;
