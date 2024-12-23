@@ -46,7 +46,10 @@ mongoose.connect(process.env.DATABASE, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
   useCreateIndex: true,
-  useFindAndModify: false
+  useFindAndModify: false,
+  connectTimeoutMS: 30000,  // Increase connection timeout to 30 seconds
+  socketTimeoutMS: 45000    // Increase socket timeout to 45 seconds
+
 })
   .then(() => console.log("DB connected"))
   .catch((err) => console.log(err));
