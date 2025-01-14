@@ -174,17 +174,16 @@ const projectSchema = new mongoose.Schema(
             // enum: ['COMMERCIAL', 'HEALTHCARE', 'RESIDENTIAL', 'RELIGIOUS', 'LANDSCAPE'], // Predefined categories (using lowercase for consistency)
             enum: ['commercial', 'healthcare', 'residential', 'religious', 'landscape'], // Predefined categories (using lowercase for consistency)
         },
-        // <option value="web-development">COMMERCIAL 
-        // </option>
-        // <option value="design">HEALTHCARE</option>
-        // <option value="marketing">RESIDENTIAL</option>
-        // <option value="design">RELIGIOUS</option>
-        // <option value="marketing">LANDSCAPE</option>
+        
         postedBy: {
             type: ObjectId,
             ref: "User",
         },
         images: [{
+            url: String,
+            public_id: String,
+        }],
+        overviewImages: [{
             url: String,
             public_id: String,
         }],

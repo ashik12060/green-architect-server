@@ -45,8 +45,8 @@ const videoRoute = require('./routes/videoRoute');
 mongoose.connect(process.env.DATABASE, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  useCreateIndex: true,
-  useFindAndModify: false,
+  // useCreateIndex: true,
+  // useFindAndModify: false,
   connectTimeoutMS: 30000,  // Increase connection timeout to 30 seconds
   socketTimeoutMS: 45000    // Increase socket timeout to 45 seconds
 
