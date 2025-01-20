@@ -433,12 +433,66 @@ exports.deleteProject = async (req, res, next) => {
 
 
 // add multiple images
+// exports.updateProject = async (req, res, next) => {
+//   try {
+//     const { title, content, images } = req.body;
+//     const currentProject = await Project.findById(req.params.id);
+
+//     // Delete old images if a new set of images is provided
+//     if (images && images.length) {
+//       await Promise.all(
+//         currentProject.images.map((img) =>
+//           cloudinary.uploader.destroy(img.public_id)
+//         )
+//       );
+
+//       // Upload new images to Cloudinary
+//       const uploadedImages = await Promise.all(
+//         images.map(async (image) => {
+//           const result = await cloudinary.uploader.upload(image, {
+//             folder: "projects",
+//             width: 1200,
+//             crop: "scale",
+//           });
+//           return { public_id: result.public_id, url: result.secure_url };
+//         })
+//       );
+
+//       currentProject.images = uploadedImages;
+//     }
+
+//     currentProject.title = title || currentProject.title;
+//     currentProject.content = content || currentProject.content;
+//     const projectsUpdate = await currentProject.save();
+
+//     res.status(200).json({
+//       success: true,
+//       projectsUpdate,
+//     });
+//   } catch (error) {
+//     next(error);
+//   } 
+// };
 exports.updateProject = async (req, res, next) => {
   try {
-    const { title, content, images } = req.body;
+    const { title, content, images, overviewImages, address, landArea, floors, apartmentFloor, size, bedroom, bathroom, launchDate, collectionName, buildingType, mosque, college, school, market, bank1, bank2, atm, busStop, mosqueName, collegeName, schoolName, marketName, bank1Name, bank2Name, atmName, busStopName, category } = req.body;
     const currentProject = await Project.findById(req.params.id);
 
-    // Delete old images if a new set of images is provided
+    // If the project does not exist
+    if (!currentProject) {
+      return res.status(404).json({
+        success: false,
+        message: "Project not found.",
+      });
+    }
+
+    // Return the existing project data for the frontend to populate the form
+    res.status(200).json({
+      success: true,
+      project: currentProject,  // Send the entire current project data to the frontend
+    });
+
+    // Process updates if the fields are updated
     if (images && images.length) {
       await Promise.all(
         currentProject.images.map((img) =>
@@ -446,7 +500,6 @@ exports.updateProject = async (req, res, next) => {
         )
       );
 
-      // Upload new images to Cloudinary
       const uploadedImages = await Promise.all(
         images.map(async (image) => {
           const result = await cloudinary.uploader.upload(image, {
@@ -461,8 +514,58 @@ exports.updateProject = async (req, res, next) => {
       currentProject.images = uploadedImages;
     }
 
+    if (overviewImages && overviewImages.length) {
+      await Promise.all(
+        currentProject.overviewImages.map((img) =>
+          cloudinary.uploader.destroy(img.public_id)
+        )
+      );
+
+      const uploadedOverviewImages = await Promise.all(
+        overviewImages.map(async (image) => {
+          const result = await cloudinary.uploader.upload(image, {
+            folder: "projects overview",
+            width: 1200,
+            crop: "scale",
+          });
+          return { public_id: result.public_id, url: result.secure_url };
+        })
+      );
+
+      currentProject.overviewImages = uploadedOverviewImages;
+    }
+
+    // Update other fields only if they are provided
     currentProject.title = title || currentProject.title;
     currentProject.content = content || currentProject.content;
+    currentProject.address = address || currentProject.address;
+    currentProject.landArea = landArea || currentProject.landArea;
+    currentProject.floors = floors || currentProject.floors;
+    currentProject.apartmentFloor = apartmentFloor || currentProject.apartmentFloor;
+    currentProject.size = size || currentProject.size;
+    currentProject.bedroom = bedroom || currentProject.bedroom;
+    currentProject.bathroom = bathroom || currentProject.bathroom;
+    currentProject.launchDate = launchDate || currentProject.launchDate;
+    currentProject.collectionName = collectionName || currentProject.collectionName;
+    currentProject.buildingType = buildingType || currentProject.buildingType;
+    currentProject.mosque = mosque || currentProject.mosque;
+    currentProject.college = college || currentProject.college;
+    currentProject.school = school || currentProject.school;
+    currentProject.market = market || currentProject.market;
+    currentProject.bank1 = bank1 || currentProject.bank1;
+    currentProject.bank2 = bank2 || currentProject.bank2;
+    currentProject.atm = atm || currentProject.atm;
+    currentProject.busStop = busStop || currentProject.busStop;
+    currentProject.mosqueName = mosqueName || currentProject.mosqueName;
+    currentProject.collegeName = collegeName || currentProject.collegeName;
+    currentProject.schoolName = schoolName || currentProject.schoolName;
+    currentProject.marketName = marketName || currentProject.marketName;
+    currentProject.bank1Name = bank1Name || currentProject.bank1Name;
+    currentProject.bank2Name = bank2Name || currentProject.bank2Name;
+    currentProject.atmName = atmName || currentProject.atmName;
+    currentProject.busStopName = busStopName || currentProject.busStopName;
+    currentProject.category = category || currentProject.category;
+
     const projectsUpdate = await currentProject.save();
 
     res.status(200).json({
@@ -471,8 +574,9 @@ exports.updateProject = async (req, res, next) => {
     });
   } catch (error) {
     next(error);
-  } 
+  }
 };
+
 
 exports.reorderProjects = async (req, res) => {
   const { reorderedProjects } = req.body;

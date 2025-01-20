@@ -63,173 +63,136 @@ exports.showProduct = async (req, res, next) => {
 }
 
 
-//show single product
+//show single post
 exports.showSingleProduct = async (req, res, next) => {
     try {
-        const product = await Product.findById(req.params.id).populate('comments.postedBy', 'name');
+        // Use Product model instead of Post
+        const product = await Product.findById(req.params.id); // No need to populate for simple fields
+        if (!product) {
+            return res.status(404).json({
+                success: false,
+                message: "Product not found",
+            });
+        }
         res.status(200).json({
             success: true,
-            product
-        })
+            product, // Return product data directly
+        });
     } catch (error) {
         next(error);
     }
-
 }
 
 
 //delete post
+
 exports.deleteProduct = async (req, res, next) => {
-    const currentProduct = await Product.findById(req.params.id);
-
-    //delete post image in cloudinary       
-    const ImgId = currentProduct.image.public_id;
-    if (ImgId) {
-        await cloudinary.uploader.destroy(ImgId);
-    }
-
     try {
-        const product = await Product.findByIdAndRemove(req.params.id);
+        const currentProduct = await Product.findById(req.params.id);
+
+        if (!currentProduct) {
+            return res.status(404).json({
+                success: false,
+                message: "Product not found"
+            });
+        }
+
+        // Delete image from Cloudinary if exists
+        const ImgId = currentProduct.image.public_id;
+        if (ImgId) {
+            try {
+                const cloudinaryResponse = await cloudinary.uploader.destroy(ImgId);
+                console.log("Cloudinary Response:", cloudinaryResponse);
+            } catch (cloudError) {
+                console.error('Error deleting image from Cloudinary:', cloudError);
+                return res.status(500).json({
+                    success: false,
+                    message: "Error deleting product image from Cloudinary"
+                });
+            }
+        }
+
+        // Delete the product from the database
+        const product = await Product.findByIdAndDelete(req.params.id);
+        if (!product) {
+            return res.status(404).json({
+                success: false,
+                message: "Product not found during delete operation"
+            });
+        }
+
         res.status(200).json({
             success: true,
             message: "Product deleted"
-        })
+        });
 
     } catch (error) {
+        console.error("Error deleting product:", error);
         next(error);
     }
+};
 
-}
 
 
-//update Product
+
+// Update Product
 exports.updateProduct = async (req, res, next) => {
-    try {
-        const { title, content, image } = req.body;
-        const currentProduct = await Product.findById(req.params.id);
+    const { title, content, image } = req.body;  // Assuming title and content can be updated
 
-        //build the object data
-        const data = {
-            title: title || currentProduct.title,
-            content: content || currentProduct.content,
-            image: image || currentProduct.image,
+    try {
+        // Find the product by ID
+        const product = await Product.findById(req.params.id);
+
+        if (!product) {
+            return res.status(404).json({
+                success: false,
+                message: 'Product not found',
+            });
         }
 
-        //modify Product image conditionally
-        if (req.body.image !== '') {
-
-            const ImgId = currentProduct.image.public_id;
-            if (ImgId) {
-                await cloudinary.uploader.destroy(ImgId);
-            }
-
-            const newImage = await cloudinary.uploader.upload(req.body.image, {
-                folder: 'products',
+        // Upload new image to Cloudinary (if there's a new image)
+        let imageResult = product.image; // keep existing image by default
+        if (image) {
+            const result = await cloudinary.uploader.upload(image, {
+                folder: "products",
                 width: 1200,
                 crop: "scale"
             });
-
-            data.image = {
-                public_id: newImage.public_id,
-                url: newImage.secure_url
-            }
-
+            imageResult = {
+                public_id: result.public_id,
+                url: result.secure_url
+            };
         }
 
-        const productUpdate = await Product.findByIdAndUpdate(req.params.id, data, { new: true });
+        // Update product fields
+        product.title = {
+            en: title.en || product.title.en,
+            bn: title.bn || product.title.bn,
+            es: title.es || product.title.es,
+        };
+        product.content = {
+            en: content.en || product.content.en,
+            bn: content.bn || product.content.bn,
+            es: content.es || product.content.es,
+        };
+        product.image = imageResult;
+
+        // Save updated product
+        await product.save();
 
         res.status(200).json({
             success: true,
-            productUpdate
-        })
-
+            product
+        });
     } catch (error) {
+        console.error('Error updating product:', error.message);
         next(error);
     }
-
-}
-
+};
 
 
 
-// exports.reorderProducts = async (req, res, next) => {
-//     const { reorderedProducts } = req.body;
 
-//     try {
-//         // Update each product's order in the database
-//         for (const [index, product] of reorderedProducts.entries()) {
-//             await Product.findByIdAndUpdate(product._id, { order: index });
-//         }
-
-//         res.status(200).json({
-//             success: true,
-//             message: "Products reordered successfully!",
-//         });
-//     } catch (error) {
-//         console.error(error);
-//         next(error);
-//     }
-// };
-
-// exports.reorderProducts = async (req, res) => {
-//     const { reorderedProducts } = req.body;
-  
-//     try {
-//       // Loop through the reordered products and update their 'order' field in the database
-//       for (let i = 0; i < reorderedProducts.length; i++) {
-//         await Product.findByIdAndUpdate(reorderedProducts[i], {
-//           order: i, // Update the 'order' field with the new index
-//         });
-//       }
-  
-//       res.status(200).json({ message: "Product order updated successfully" });
-//     } catch (err) {
-//       console.error("Failed to reorder products", err);
-//       res.status(500).json({ message: "Failed to reorder products" });
-//     }
-//   };
-  
-// exports.reorderProducts = async (req, res) => {
-//     const { reorderedProducts } = req.body;
-
-//     try {
-//         // Using Promise.all for parallel updates
-//         const updatePromises = reorderedProducts.map((productId, index) => 
-//             Product.findByIdAndUpdate(productId, { order: index })
-//         );
-
-//         // Wait for all the update promises to resolve
-//         await Promise.all(updatePromises);
-
-//         res.status(200).json({ message: "Product order updated successfully" });
-//     } catch (err) {
-//         console.error("Failed to reorder products", err);
-//         res.status(500).json({ message: "Failed to reorder products" });
-//     }
-// };
-
-// exports.reorderProducts = async (req, res) => {
-//     const { reorderedProducts } = req.body;
-
-//     if (!reorderedProducts || reorderedProducts.length === 0) {
-//         return res.status(400).json({ message: "No products to reorder" });
-//     }
-
-//     try {
-//         const updatePromises = reorderedProducts.map((productId, index) => {
-//             console.log(`Updating product with ID ${productId} to order ${index}`);
-//             return Product.findByIdAndUpdate(productId, { order: index });
-//         });
-
-//         const updatedProducts = await Promise.all(updatePromises);
-
-//         console.log("Updated products:", updatedProducts);
-//         res.status(200).json({ message: "Product order updated successfully", products: updatedProducts });
-//     } catch (err) {
-//         console.error("Failed to reorder products", err);
-//         res.status(500).json({ message: "Failed to reorder products", error: err.message });
-//     }
-// };
 
 exports.reorderProducts = async (req, res) => {
     const { reorderedProducts } = req.body;
