@@ -29,6 +29,21 @@ const projectSchema = new mongoose.Schema(
             bn: { type: String, required: true },
             es: { type: String, required: true },
         },
+        frontRoad: {
+            en: { type: String, required: true },
+            bn: { type: String, required: true },
+            es: { type: String, required: true },
+        },
+        units: {
+            en: { type: String, required: true },
+            bn: { type: String, required: true },
+            es: { type: String, required: true },
+        },
+        parking: {
+            en: { type: String, required: true },
+            bn: { type: String, required: true },
+            es: { type: String, required: true },
+        },
         apartmentFloor: {
             en: { type: String, required: true },
             bn: { type: String, required: true },
@@ -66,7 +81,7 @@ const projectSchema = new mongoose.Schema(
             es: { type: String, required: true },
         },
 
-    //    new
+   
 
         mosque: {
             en: { type: String, required: true },

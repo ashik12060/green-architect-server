@@ -55,20 +55,26 @@ exports.showCarousel = async (req, res, next) => {
 
 }
 
+exports.showSingleCarousel = async (req, res, next) => {
+    try {
+        // Use Product model instead of Post
+        const carousel = await Carousel.findById(req.params.id); // No need to populate for simple fields
+        if (!carousel) {
+            return res.status(404).json({
+                success: false,
+                message: "carousel not found",
+            });
+        }
+        res.status(200).json({
+            success: true,
+            carousel, // Return carousel data directly
+        });
+    } catch (error) {
+        next(error);
+    }
+}
 
-//show single item
-// exports.showSingleItem = async (req, res, next) => {
-//     try {
-//         const item = await Item.findById(req.params.id).populate('comments.postedBy', 'name');
-//         res.status(200).json({
-//             success: true,
-//             item
-//         })
-//     } catch (error) {
-//         next(error);
-//     }
 
-// }
 
 
 //delete item
