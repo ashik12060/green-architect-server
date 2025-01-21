@@ -3,42 +3,6 @@ const ErrorResponse = require('../utils/errorResponse');
 const main = require('../app');
 const Member = require('../models/memberModel');
 
-//create item
-// exports.createMember = async (req, res, next) => {
-//     const { title, designation, postedBy, image, likes, comments } = req.body;
-
-//     try {
-//         //upload image in cloudinary
-//         const result = await cloudinary.uploader.upload(image, {
-//             folder: "surgical",
-//             width: 1200,
-//             crop: "scale"
-//         })
-//         const member = await Member.create({
-//             title,
-//             designation,
-
-//             postedBy: req.user._id,
-//             image: {
-//                 public_id: result.public_id,
-//                 url: result.secure_url
-//             },
-
-//         });
-//         res.status(201).json({
-//             success: true,
-//             member
-//         })
-
-
-//     } catch (error) {
-//         console.log(error);
-//         next(error);
-//     }
-
-// }
-
-// ne
 exports.createMember = async (req, res, next) => {
     const { title, designation,article, image } = req.body;
   
@@ -85,22 +49,6 @@ exports.createMember = async (req, res, next) => {
   };
 
 
-//show Members
-// exports.showMember = async (req, res, next) => {
-//     try {
-//         const members = await Member.find().sort({ createdAt: -1 }).populate('postedBy', 'name');
-//         res.status(201).json({
-//             success: true,
-//             members
-//         })
-//     } catch (error) {
-//         next(error);
-//     }
-
-// }
-
-
-// ne
 exports.showMember = async (req, res, next) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -126,178 +74,129 @@ exports.showMember = async (req, res, next) => {
 }
 
 
-//show single member
-// exports.showSingleMember = async (req, res, next) => {
-//     try {
-//         const members = await Members.findById(req.params.id).populate('comments.postedBy', 'name');
-//         res.status(200).json({
-//             success: true,
-//             members
-//         })
-//     } catch (error) {
-//         next(error);
-//     }
-
-// }
-
-
-// ne
 exports.showSingleMember = async (req, res, next) => {
     try {
-        const member = await Member.findById(req.params.id).populate('comments.postedBy', 'name');
+        // Use member model 
+        const member = await Member.findById(req.params.id); // No need to populate for simple fields
         if (!member) {
-            return next(new ErrorResponse("Member not found", 404));
+            return res.status(404).json({
+                success: false,
+                message: "Product not found",
+            });
         }
+        res.status(200).json({
+            success: true,
+            member, // Return member data directly
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
+
+exports.deleteMember = async (req, res, next) => {
+    try {
+        const currentMember = await Member.findById(req.params.id);
+
+        if (!currentMember) {
+            return res.status(404).json({
+                success: false,
+                message: "Member not found"
+            });
+        }
+
+        // Delete image from Cloudinary if exists
+        const ImgId = currentMember.image.public_id;
+        if (ImgId) {
+            try {
+                const cloudinaryResponse = await cloudinary.uploader.destroy(ImgId);
+                console.log("Cloudinary Response:", cloudinaryResponse);
+            } catch (cloudError) {
+                console.error('Error deleting image from Cloudinary:', cloudError);
+                return res.status(500).json({
+                    success: false,
+                    message: "Error deleting Member image from Cloudinary"
+                });
+            }
+        }
+
+        // Delete the product from the database
+        const member = await Member.findByIdAndDelete(req.params.id);
+        if (!member) {
+            return res.status(404).json({
+                success: false,
+                message: "Member not found during delete operation"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "member deleted"
+        });
+
+    } catch (error) {
+        console.error("Error deleting member:", error);
+        next(error);
+    }
+};
+
+// Update Member
+exports.updateMember = async (req, res, next) => {
+    const { title, designation,article, image } = req.body;  
+
+    try {
+        // Find the member by ID
+        const member = await Member.findById(req.params.id);
+
+        if (!member) {
+            return res.status(404).json({
+                success: false,
+                message: 'member not found',
+            });
+        }
+
+        // Upload new image to Cloudinary (if there's a new image)
+        let imageResult = member.image; // keep existing image by default
+        if (image) {
+            const result = await cloudinary.uploader.upload(image, {
+                folder: "surgical",
+                width: 1200,
+                crop: "scale"
+            });
+            imageResult = {
+                public_id: result.public_id,
+                url: result.secure_url
+            };
+        }
+
+        // Update member fields
+        member.title = {
+            en: title.en || member.title.en,
+            bn: title.bn || member.title.bn,
+            es: title.es || member.title.es,
+        };
+        member.designation = {
+            en: designation.en || member.designation.en,
+            bn: designation.bn || member.designation.bn,
+            es: designation.es || member.designation.es,
+        };
+        member.article = {
+            en: article.en || member.article.en,
+            bn: article.bn || member.article.bn,
+            es: article.es || member.article.es,
+        };
+        member.image = imageResult;
+
+        // Save updated product
+        await member.save();
 
         res.status(200).json({
             success: true,
             member
         });
     } catch (error) {
+        console.error('Error updating member:', error.message);
         next(error);
     }
-}
+};
 
-
-//delete item
-// exports.deleteMember = async (req, res, next) => {
-//     const currentMember = await Member.findById(req.params.id);
-
-//     //delete member image in cloudinary       
-//     const ImgId = currentMember.image.public_id;
-//     if (ImgId) {
-//         await cloudinary.uploader.destroy(ImgId);
-//     }
-
-//     try {
-//         const member = await Member.findByIdAndRemove(req.params.id);
-//         res.status(200).json({
-//             success: true,
-//             message: "Image deleted"
-//         })
-
-//     } catch (error) {
-//         next(error);
-//     }
-
-// }
-
-
-// ne
-exports.deleteMember = async (req, res, next) => {
-    const currentMember = await Member.findById(req.params.id);
-    if (!currentMember) {
-        return next(new ErrorResponse("Member not found", 404));
-    }
-
-    // Delete member image in Cloudinary       
-    const ImgId = currentMember.image.public_id;
-    if (ImgId) {
-        await cloudinary.uploader.destroy(ImgId);
-    }
-
-    try {
-        await Member.findByIdAndRemove(req.params.id);
-        res.status(200).json({
-            success: true,
-            message: "Member deleted successfully"
-        });
-    } catch (error) {
-        next(error);
-    }
-}
-
-
-//update member
-// exports.updateMember = async (req, res, next) => {
-//     try {
-//         const { title, designation, image } = req.body;
-//         const currentMember = await Member.findById(req.params.id);
-
-//         //build the object data
-//         const data = {
-//             title: title || currentMember.title,
-//             designation: designation || currentMember.designation,
-//             image: image || currentMember.image,
-//         }
-
-//         //modify member image conditionally
-//         if (req.body.image !== '') {
-
-//             const ImgId = currentMember.image.public_id;
-//             if (ImgId) {
-//                 await cloudinary.uploader.destroy(ImgId);
-//             }
-
-//             const newImage = await cloudinary.uploader.upload(req.body.image, {
-//                 folder: 'Member',
-//                 width: 1200,
-//                 crop: "scale"
-//             });
-
-//             data.image = {
-//                 public_id: newImage.public_id,
-//                 url: newImage.secure_url
-//             }
-
-//         }
-
-//         const memberUpdate = await Member.findByIdAndUpdate(req.params.id, data, { new: true });
-
-//         res.status(200).json({
-//             success: true,
-//             memberUpdate
-//         })
-
-//     } catch (error) {
-//         next(error);
-//     }
-
-// }
-
-
-
-// ne
-exports.updateMember = async (req, res, next) => {
-    const currentMember = await Member.findById(req.params.id);
-    if (!currentMember) {
-        return next(new ErrorResponse("Member not found", 404));
-    }
-
-    try {
-        const { title, designation, image } = req.body;
-        const data = {
-            title: title || currentMember.title,
-            designation: designation || currentMember.designation,
-            image: currentMember.image, // Preserve old image if not updating
-        };
-
-        // Modify member image conditionally
-        if (image) {
-            const ImgId = currentMember.image.public_id;
-            if (ImgId) {
-                await cloudinary.uploader.destroy(ImgId);
-            }
-
-            const newImage = await cloudinary.uploader.upload(image, {
-                folder: 'Member',
-                width: 1200,
-                crop: "scale"
-            });
-
-            data.image = {
-                public_id: newImage.public_id,
-                url: newImage.secure_url
-            };
-        }
-
-        const memberUpdate = await Member.findByIdAndUpdate(req.params.id, data, { new: true });
-
-        res.status(200).json({
-            success: true,
-            memberUpdate
-        });
-    } catch (error) {
-        next(error);
-    }
-}

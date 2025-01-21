@@ -84,7 +84,7 @@ exports.showSingleProduct = async (req, res, next) => {
 }
 
 
-//delete post
+//delete product
 
 exports.deleteProduct = async (req, res, next) => {
     try {

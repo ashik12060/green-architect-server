@@ -78,27 +78,73 @@ exports.showSingleCarousel = async (req, res, next) => {
 
 
 //delete item
+// exports.deleteCarousel = async (req, res, next) => {
+//     const currentCarousel = await Carousel.findById(req.params.id);
+
+//     //delete item image in cloudinary       
+//     const ImgId = currentCarousel.image.public_id;
+//     if (ImgId) {
+//         await cloudinary.uploader.destroy(ImgId);
+//     }
+
+//     try {
+//         const carousel = await Carousel.findByIdAndRemove(req.params.id);
+//         res.status(200).json({
+//             success: true,
+//             message: "Carousel deleted"
+//         })
+
+//     } catch (error) {
+//         next(error);
+//     }
+
+// }
+
 exports.deleteCarousel = async (req, res, next) => {
-    const currentCarousel = await Carousel.findById(req.params.id);
-
-    //delete item image in cloudinary       
-    const ImgId = currentCarousel.image.public_id;
-    if (ImgId) {
-        await cloudinary.uploader.destroy(ImgId);
-    }
-
     try {
-        const carousel = await Carousel.findByIdAndRemove(req.params.id);
+        const currentCarousel = await Carousel.findById(req.params.id);
+
+        if (!currentCarousel) {
+            return res.status(404).json({
+                success: false,
+                message: "Carousel not found"
+            });
+        }
+
+        // Delete image from Cloudinary if exists
+        const ImgId = currentCarousel.image.public_id;
+        if (ImgId) {
+            try {
+                const cloudinaryResponse = await cloudinary.uploader.destroy(ImgId);
+                console.log("Cloudinary Response:", cloudinaryResponse);
+            } catch (cloudError) {
+                console.error('Error deleting image from Cloudinary:', cloudError);
+                return res.status(500).json({
+                    success: false,
+                    message: "Error deleting Carousel image from Cloudinary"
+                });
+            }
+        }
+
+        // Delete the Carousel from the database
+        const carousel = await Carousel.findByIdAndDelete(req.params.id);
+        if (!carousel) {
+            return res.status(404).json({
+                success: false,
+                message: "Carousel not found during delete operation"
+            });
+        }
+
         res.status(200).json({
             success: true,
             message: "Carousel deleted"
-        })
+        });
 
     } catch (error) {
+        console.error("Error deleting Carousel:", error);
         next(error);
     }
-
-}
+};
 
 
 //update item

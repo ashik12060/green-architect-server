@@ -79,27 +79,53 @@ exports.showSinglePost = async (req, res, next) => {
 
 
 //delete post
+
 exports.deletePost = async (req, res, next) => {
-    const currentPost = await Post.findById(req.params.id);
-
-    //delete post image in cloudinary       
-    const ImgId = currentPost.image.public_id;
-    if (ImgId) {
-        await cloudinary.uploader.destroy(ImgId);
-    }
-
     try {
-        const post = await Post.findByIdAndRemove(req.params.id);
+        const currentPost = await Post.findById(req.params.id);
+
+        if (!currentPost) {
+            return res.status(404).json({
+                success: false,
+                message: "Post not found"
+            });
+        }
+
+        // Delete image from Cloudinary if exists
+        const ImgId = currentPost.image.public_id;
+        if (ImgId) {
+            try {
+                const cloudinaryResponse = await cloudinary.uploader.destroy(ImgId);
+                console.log("Cloudinary Response:", cloudinaryResponse);
+            } catch (cloudError) {
+                console.error('Error deleting image from Cloudinary:', cloudError);
+                return res.status(500).json({
+                    success: false,
+                    message: "Error deleting Post image from Cloudinary"
+                });
+            }
+        }
+
+        // Delete the Post from the database
+        const post = await Post.findByIdAndDelete(req.params.id);
+        if (!post) {
+            return res.status(404).json({
+                success: false,
+                message: "Post not found during delete operation"
+            });
+        }
+
         res.status(200).json({
             success: true,
-            message: "post deleted"
-        })
+            message: "Post deleted"
+        });
 
     } catch (error) {
+        console.error("Error deleting Post:", error);
         next(error);
     }
+};
 
-}
 
 
 //update post
