@@ -38,6 +38,7 @@ const rndRoute = require('./routes/rndRoute');
 const carouselRoute = require('./routes/carouselRoute');
 const memberRoute = require('./routes/memberRoute');
 const videoRoute = require('./routes/videoRoute');
+const videoAddRoutes = require('./routes/videoAddRoutes');
 
 
 
@@ -103,7 +104,8 @@ app.use('/api', projectRoute);
 app.use('/api', rndRoute);
 app.use('/api',carouselRoute);
 app.use('/api',memberRoute);
-app.use('/api',videoRoute);
+// app.use('/api',videoRoute);
+app.use('/api',videoAddRoutes);
 
 
 app.get('/', (req, res) => {

@@ -193,9 +193,6 @@ exports.showSingleProject = async (req, res, next) => {
 };
 
 
-
-
-
 //delete post
 
 exports.deleteProject = async (req, res, next) => {
