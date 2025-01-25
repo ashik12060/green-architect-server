@@ -43,210 +43,83 @@ exports.showVideos = async (req, res) => {
   }
 };
 
-// //show single post
-// exports.showSinglePost = async (req, res, next) => {
-//     try {
-//         const post = await Post.findById(req.params.id).populate('comments.postedBy', 'name');
-//         res.status(200).json({
-//             success: true,
-//             post
-//         })
-//     } catch (error) {
-//         next(error);
-//     }
+// //show single video
+exports.showSingleVideo = async (req, res, next) => {
+   try {
+           const video = await Video.findById(req.params.id); // No need to populate for simple fields
+           if (!video) {
+               return res.status(404).json({
+                   success: false,
+                   message: "video not found",
+               });
+           }
+           res.status(200).json({
+               success: true,
+               video, // Return video data directly
+           });
+       } catch (error) {
+           next(error);
+       }
 
-// }
+}
 
 
-// //delete post
+// //delete video
 
-// exports.deletePost = async (req, res, next) => {
-//     try {
-//         const currentPost = await Post.findById(req.params.id);
+exports.deleteVideo = async (req, res, next) => {
+    try {
+        const currentVideo = await Video.findById(req.params.id);
 
-//         if (!currentPost) {
-//             return res.status(404).json({
-//                 success: false,
-//                 message: "Post not found"
-//             });
-//         }
+        if (!currentVideo) {
+            return res.status(404).json({
+                success: false,
+                message: "video not found"
+            });
+        }
+        // Delete the video from the database
+        const video = await Video.findByIdAndDelete(req.params.id);
+        if (!video) {
+            return res.status(404).json({
+                success: false,
+                message: "video not found during delete operation"
+            });
+        }
 
-//         // Delete image from Cloudinary if exists
-//         const ImgId = currentPost.image.public_id;
-//         if (ImgId) {
-//             try {
-//                 const cloudinaryResponse = await cloudinary.uploader.destroy(ImgId);
-//                 console.log("Cloudinary Response:", cloudinaryResponse);
-//             } catch (cloudError) {
-//                 console.error('Error deleting image from Cloudinary:', cloudError);
-//                 return res.status(500).json({
-//                     success: false,
-//                     message: "Error deleting Post image from Cloudinary"
-//                 });
-//             }
-//         }
+        res.status(200).json({
+            success: true,
+            message: "video deleted"
+        });
 
-//         // Delete the Post from the database
-//         const post = await Post.findByIdAndDelete(req.params.id);
-//         if (!post) {
-//             return res.status(404).json({
-//                 success: false,
-//                 message: "Post not found during delete operation"
-//             });
-//         }
-
-//         res.status(200).json({
-//             success: true,
-//             message: "Post deleted"
-//         });
-
-//     } catch (error) {
-//         console.error("Error deleting Post:", error);
-//         next(error);
-//     }
-// };
+    } catch (error) {
+        console.error("Error deleting video:", error);
+        next(error);
+    }
+};
 
 
 
-// //update post
-// exports.updatePost = async (req, res, next) => {
-//     try {
-//         const { title, content, image } = req.body;
-//         const currentPost = await Post.findById(req.params.id);
+// //update video
+exports.updateVideo = async (req, res, next) => {
+    try {
+        const { title, videoUrl } = req.body;
+        const currentVideo = await Video.findById(req.params.id);
 
-//         //build the object data
-//         const data = {
-//             title: title || currentPost.title,
-//             content: content || currentPost.content,
-//             image: image || currentPost.image,
-//         }
+        //build the object data
+        const data = {
+            title: title || currentVideo.title,
+            videoUrl,
+        }
 
-//         //modify post image conditionally
-//         if (req.body.image !== '') {
+         
+        const videoUpdate = await Video.findByIdAndUpdate(req.params.id, data, { new: true });
 
-//             const ImgId = currentPost.image.public_id;
-//             if (ImgId) {
-//                 await cloudinary.uploader.destroy(ImgId);
-//             }
+        res.status(200).json({
+            success: true,
+            videoUpdate
+        })
 
-//             const newImage = await cloudinary.uploader.upload(req.body.image, {
-//                 folder: 'posts',
-//                 width: 1200,
-//                 crop: "scale"
-//             });
+    } catch (error) {
+        next(error);
+    }
 
-//             data.image = {
-//                 public_id: newImage.public_id,
-//                 url: newImage.secure_url
-//             }
-
-//         }
-
-//         const postUpdate = await Post.findByIdAndUpdate(req.params.id, data, { new: true });
-
-//         res.status(200).json({
-//             success: true,
-//             postUpdate
-//         })
-
-//     } catch (error) {
-//         next(error);
-//     }
-
-// }
-
-// //add comment
-// exports.addComment = async (req, res, next) => {
-//     const { comment } = req.body;
-//     try {
-//         const postComment = await Post.findByIdAndUpdate(req.params.id, {
-//             $push: { comments: { text: comment, postedBy: req.user._id } }
-//         },
-//             { new: true }
-//         );
-//         const post = await Post.findById(postComment._id).populate('comments.postedBy', 'name email');
-//         res.status(200).json({
-//             success: true,
-//             post
-//         })
-
-//     } catch (error) {
-//         next(error);
-//     }
-
-// }
-
-
-// // Add comment to a post
-// exports.addComment = async (req, res, next) => {
-//     const { comment } = req.body;
-//     try {
-//         const postComment = await Post.findByIdAndUpdate(
-//             req.params.id,
-//             {
-//                 $push: { comments: { text: comment, postedBy: req.user._id } }
-//             },
-//             { new: true }
-//         ).populate('comments.postedBy', 'name email');
-//         res.status(200).json({
-//             success: true,
-//             post: postComment
-//         });
-//     } catch (error) {
-//         next(error);
-//     }
-// };
-
-
-
-
-// //add like
-// exports.addLike = async (req, res, next) => {
-
-//     try {
-//         const post = await Post.findByIdAndUpdate(req.params.id, {
-//             $addToSet: { likes: req.user._id }
-//         },
-//             { new: true }
-//         );
-//         const posts = await Post.find().sort({ createdAt: -1 }).populate('postedBy', 'name');
-//         main.io.emit('add-like', posts);
-
-//         res.status(200).json({
-//             success: true,
-//             post,
-//             posts
-//         })
-
-//     } catch (error) {
-//         next(error);
-//     }
-
-// }
-
-
-// //remove like
-// exports.removeLike = async (req, res, next) => {
-
-//     try {
-//         const post = await Post.findByIdAndUpdate(req.params.id, {
-//             $pull: { likes: req.user._id }
-//         },
-//             { new: true }
-//         );
-
-//         const posts = await Post.find().sort({ createdAt: -1 }).populate('postedBy', 'name');
-//         main.io.emit('remove-like', posts);
-
-//         res.status(200).json({
-//             success: true,
-//             post
-//         })
-
-//     } catch (error) {
-//         next(error);
-//     }
-
-// }
-
-  
+}
